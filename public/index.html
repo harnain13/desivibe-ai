@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DesiVibe // Premium AI Agent Dashboard</title>
+    <style>
+        :root {
+            --bg-base: #0f0c1b;
+            --bg-element: #221b38;
+            --text-main: #ffffff;
+            --text-muted: #a69fb5;
+            --spotify-green: #ff4b72; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg-base); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; padding-bottom: 4rem; }
+        .ambient-glow { position: fixed; top: -15%; left: 50%; transform: translateX(-50%); width: 90vw; height: 55vh; background: radial-gradient(circle, rgba(219, 48, 105, 0.12) 0%, rgba(0,0,0,0) 70%); z-index: 0; pointer-events: none; }
+        header { padding: 2rem 3rem 1rem 3rem; z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        header h1 { font-size: 1.4rem; font-weight: 800; background: linear-gradient(90deg, #fff, #ff4b72); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .clear-mem-btn { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); padding: 0.5rem 0.85rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+        .clear-mem-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        main { flex: 1; max-width: 820px; width: 100%; margin: 0 auto; padding: 1rem 1rem; z-index: 10; display: flex; flex-direction: column; gap: 2.5rem; }
+        .search-container { text-align: center; display: flex; flex-direction: column; gap: 0.75rem; }
+        .search-container h2 { font-size: 2.6rem; font-weight: 900; letter-spacing: -0.04em; }
+        .app-one-liner { font-size: 1rem; color: var(--text-muted); font-weight: 500; margin-bottom: 0.5rem; }
+        .genre-nav-bar { display: flex; gap: 0.6rem; justify-content: center; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 1rem; }
+        .genre-pill { background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.15); padding: 0.45rem 1.1rem; border-radius: 30px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); cursor: pointer; text-transform: uppercase; }
+        .genre-pill.active { background-color: var(--spotify-green); border-color: var(--spotify-green); color: #fff; }
+        .input-wrapper { position: relative; width: 100%; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border-radius: 50px; overflow: hidden; }
+        .vibe-input { width: 100%; padding: 1.2rem 4rem 1.2rem 1.75rem; background-color: var(--bg-element); border: 2px solid transparent; border-radius: 50px; color: var(--text-main); font-size: 1.05rem; outline: none; }
+        .submit-btn { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); background-color: var(--text-main); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; }
+        .suggestions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+        .suggestion-chip { background-color: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.5rem 0.95rem; border-radius: 20px; font-size: 0.82rem; color: var(--text-muted); cursor: pointer; }
+        .playlist-card { border-radius: 20px; padding: 2rem 1.75rem; display: none; flex-direction: column; gap: 1.75rem; box-shadow: 0 25px 55px rgba(0,0,0,0.6); background: linear-gradient(135deg, #321036 0%, #0c020f 100%); }
+        .playlist-header { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.25rem; }
+        .playlist-title { font-size: 1.5rem; font-weight: 900; }
+        .engine-badge { margin-left: auto; background-color: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); padding: 0.3rem 0.75rem; font-size: 0.68rem; border-radius: 6px; font-weight: 800; color: var(--text-muted); }
+        .track-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .track-row { display: grid; grid-template-columns: 35px 1fr auto auto; align-items: center; padding: 1rem 1rem; background-color: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 12px; gap: 1rem; text-decoration: none; color: inherit; transition: all 0.2s ease; }
+        .track-row:hover { transform: translateX(4px); background-color: rgba(255, 255, 255, 0.04); }
+        .track-num { color: var(--text-muted); font-weight: 800; }
+        .track-main-info { display: flex; flex-direction: column; gap: 0.2rem; }
+        .track-title { font-weight: 700; }
+        .track-artist { color: var(--text-muted); font-size: 0.85rem; }
+        .track-meta-data { font-size: 0.8rem; color: var(--text-muted); text-align: right; padding-right: 0.5rem; }
+        .ai-explanation { font-size: 0.8rem; color: #ff8fa4; background-color: rgba(255, 75, 114, 0.05); padding: 0.4rem 0.6rem; border-left: 3px solid var(--spotify-green); margin-top: 0.35rem; }
+        .launch-badge { background-color: rgba(255, 75, 114, 0.12); border: 1px solid rgba(255, 75, 114, 0.3); color: #ffffff; padding: 0.45rem 0.9rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .history-section { margin-top: 1rem; display: none; flex-direction: column; gap: 1rem; }
+        .history-section h4 { font-size: 1rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; }
+        .history-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.05); border-radius: 8px; text-decoration: none; color: inherit; font-size: 0.9rem; }
+        .loader-container { display: none; flex-direction: column; align-items: center; gap: 1rem; }
+        .spinner { width: 38px; height: 38px; border: 3.5px solid rgba(255,255,255,0.1); border-top-color: var(--spotify-green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow" id="ambientGlow"></div>
+    <header>
+        <div class="brand"><h1>DesiVibe AI</h1></div>
+        <button type="button" class="clear-mem-btn" onclick="resetMemory()">Reset Context</button>
+    </header>
+    <main>
+        <section class="search-container">
+            <h2>What's your exact micro-mood?</h2>
+            <p class="app-one-liner">Curate your perfect Bollywood soundtrack according to your unique mood state layer.</p>
+            <div class="genre-nav-bar" id="genreNavBar">
+                <button type="button" class="genre-pill active" onclick="selectPresetGenre(this, 'all')">All Vibes</button>
+                <button type="button" class="genre-pill" onclick="selectPresetGenre(this, 'retro')">90s Retro</button>
+                <button type="button" class="genre-pill" onclick="selectPresetGenre(this, 'indie')">Acoustic Indie</button>
+                <button type="button" class="genre-pill" onclick="selectPresetGenre(this, 'sufi')">Sufi / Gazal</button>
+                <button type="button" class="genre-pill" onclick="selectPresetGenre(this, 'club')">Club / Pop</button>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" id="vibeInput" class="vibe-input" placeholder="Describe your vibe layout...">
+                <button type="button" class="submit-btn" onclick="askAiAgent()">➔</button>
+            </div>
+        </section>
+        <div class="loader-container" id="loader">
+            <div class="spinner"></div>
+            <div style="color: var(--text-muted); font-size: 0.85rem;" id="loaderLabel">Agent analyzing thread...</div>
+        </div>
+        <section class="playlist-card" id="playlistCard">
+            <div class="playlist-header">
+                <h3 class="playlist-title" id="renderedVibe">"Your Vibe"</h3>
+                <span class="engine-badge" id="engineType">LIVE MODEL</span>
+            </div>
+            <div class="track-list" id="trackContainer"></div>
+        </section>
+        <section class="history-section" id="historySection">
+            <h4>Generated in this session</h4>
+            <div class="history-grid" id="historyGrid"></div>
+        </section>
+    </main>
+
+    <script>
+        let conversationHistory = [];
+        let runningSessionSongs = new Set();
+        let selectedGenreModifier = "all";
+
+        function resetMemory() {
+            conversationHistory = [];
+            runningSessionSongs.clear();
+            document.getElementById('historySection').style.display = 'none';
+            document.getElementById('historyGrid').innerHTML = '';
+        }
+
+        function selectPresetGenre(element, genreTag) {
+            const pills = document.getElementsByClassName('genre-pill');
+            for(let i=0; i<pills.length; i++) pills[i].classList.remove('active');
+            element.classList.add('active');
+            selectedGenreModifier = genreTag;
+            if(document.getElementById('vibeInput').value.trim()) askAiAgent();
+        }
+
+        async function askAiAgent() {
+            const currentPrompt = document.getElementById('vibeInput').value.trim();
+            if (!currentPrompt) return;
+
+            const loader = document.getElementById('loader');
+            const card = document.getElementById('playlistCard');
+            card.style.display = 'none';
+            loader.style.display = 'flex';
+
+            try {
+                // Hits your local/live custom server middleman route cleanly
+                const response = await fetch('/api/get-vibe', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        prompt: currentPrompt,
+                        history: conversationHistory,
+                        genre: selectedGenreModifier
+                    })
+                });
+
+                const data = await response.json();
+                let rawText = data.candidates[0].content.parts[0].text.trim();
+                rawText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
+                const tracks = JSON.parse(rawText.trim());
+                
+                conversationHistory.push(`User request: ${currentPrompt}`);
+                conversationHistory.push(`Agent curated tracks: ${tracks.map(t=>t.title).join(", ")}`);
+                renderTracks(tracks, currentPrompt, "SECURE CLOUD ENGINE");
+            } catch (e) {
+                console.error(e);
+                document.getElementById('loader').style.display = 'none';
+                alert("Server matching hiccup. Double check cloud dashboard environment parameters logs!");
+            }
+        }
+
+        function renderTracks(tracks, userVibe, engineName) {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('renderedVibe').innerText = `"${userVibe}"`;
+            document.getElementById('engineType').innerText = engineName;
+            const container = document.getElementById('trackContainer');
+            container.innerHTML = '';
+
+            tracks.forEach((track, index) => {
+                const row = document.createElement('a');
+                row.className = 'track-row';
+                const query = encodeURIComponent(`${track.title} ${track.artist} official song`);
+                row.href = `https://m.youtube.com/results?q=${query}`;
+                row.target = '_blank';
+                row.innerHTML = `
+                    <div class="track-num">${index + 1}</div>
+                    <div class="track-main-info">
+                        <span class="track-title">${track.title}</span>
+                        <span class="track-artist">${track.artist}</span>
+                        <div class="ai-explanation">✨ Match Logic: ${track.reason}</div>
+                    </div>
+                    <div class="track-meta-data">
+                        <div>${track.duration || "4:10"}</div>
+                        <div style="font-size:0.7rem; opacity:0.7;">🎧 ${track.listeners || "1.2M"} active</div>
+                    </div>
+                    <div><span class="launch-badge">Play</span></div>
+                `;
+                container.appendChild(row);
+                logTrackToSessionFeed(track);
+            });
+            document.getElementById('playlistCard').style.display = 'flex';
+            document.getElementById('vibeInput').value = '';
+        }
+
+        function logTrackToSessionFeed(track) {
+            if (runningSessionSongs.has(track.title)) return;
+            runningSessionSongs.add(track.title);
+            const grid = document.getElementById('historyGrid');
+            const item = document.createElement('a');
+            item.className = 'history-item';
+            item.href = `https://m.youtube.com/results?q=${encodeURIComponent(track.title + ' song')}`;
+            item.target = '_blank';
+            item.innerHTML = `<span><strong>${track.title}</strong> — ${track.artist}</span><span style="color:var(--spotify-green); font-weight:bold;">Listen ↗</span>`;
+            grid.appendChild(item);
+            document.getElementById('historySection').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
